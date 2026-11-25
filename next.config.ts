@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   experimental: {
     agentFeedback: true,
-    optimizePackageImports: ["framer-motion"],
+    optimizePackageImports: ["animejs"],
   },
   cacheComponents: true,
   partialPrefetching: true,

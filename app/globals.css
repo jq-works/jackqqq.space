@@ -1,103 +1,134 @@
 @import "tailwindcss";
 
-/* Dark mode (default) */
-:root {
-  /* Base palette - monochrome */
-  --bg: #0a0a0a;
-  --surface: #141414;
-  --surface-2: #1a1a1a;
-  --text: #ffffff;
-  --text-secondary: #a8a8a8;
-  --text-tertiary: #5c5c5c;
-  --border: #2a2a2a;
+/* Dark, clean look (palette from awmedia.marketing). Outfit light + bold mix, hairline borders, soft glows. */
 
-  /* Glassmorphism */
-  --glass-bg: rgba(20, 20, 20, 0.5);
-  --glass-border: rgba(255, 255, 255, 0.1);
+/* Dark palette taken from awmedia.marketing (no accent colour): page #000, surface #0a0a0a, card #141414, text #f5f5f7,
+   muted #8e8e93, hairline rgb(255 255 255 / .12). The utilities `ink` and `paper` follow the surface they sit on:
+   on the page / .surface-paper `ink` is the LIGHT text colour and `paper` the dark page colour; on .surface-ink they are
+   swapped back so `text-paper` stays light text and `bg-paper text-ink` stays a light pill. */
+:root, .surface-paper { --c-ink: #f5f5f7; --c-paper: #000000; --c-mist: #141414; --fg: #f5f5f7; --bg: #000000; --muted: #8e8e93; --line: rgb(255 255 255 / .14); }
+.surface-ink          { --c-ink: #000000; --c-paper: #f5f5f7; --c-mist: #141414; --fg: #f5f5f7; --bg: #0a0a0a; --muted: #8e8e93; --line: rgb(255 255 255 / .14); }
+.surface-paper { background: #000000; color: #f5f5f7; }
+.surface-ink   { background: #0a0a0a; color: #f5f5f7; }
 
-  /* Light mode values (for toggle) */
-  --light-bg: #ffffff;
-  --light-surface: #f5f5f5;
-  --light-surface-2: #efefef;
-  --light-text: #0a0a0a;
-  --light-text-secondary: #5c5c5c;
-  --light-text-tertiary: #8c8c8c;
-  --light-border: #e5e5e5;
-  --light-glass-bg: rgba(245, 245, 245, 0.5);
-  --light-glass-border: rgba(10, 10, 10, 0.1);
+/* soft top glow, like the reference hero */
+.glow { background-image: radial-gradient(70% 55% at 50% 0%, rgb(255 255 255 / .09), transparent 70%); }
+
+/* Text gradient (awmedia.marketing headline): light grey at the top fading to a dimmer grey at the bottom. Applied with
+   background-clip:text. Titles that are split into letters (splitText) put the gradient on every letter instead, because
+   letters animate with their own transforms and then do not follow a clip painted on the parent: see .grad-letters. */
+.grad { background-image: linear-gradient(180deg, #ffffff 0%, #f5f5f7 38%, #8e8e93 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+.grad-soft { background-image: linear-gradient(180deg, #f5f5f7 0%, #a1a1a6 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+.grad-letters [data-char] { background-image: linear-gradient(180deg, #ffffff 0%, #f5f5f7 38%, #8e8e93 100%); background-size: 100% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) { .grad, .grad-soft, .grad-letters [data-char] { color: #f5f5f7; -webkit-text-fill-color: currentColor; } }
+
+/* tiny uppercase label (fragment.im "ABOUT", awmedia "RECENT WORK"): mono, wide tracking, muted */
+.eyebrow { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+
+/* pill chip like awmedia's "UK WEB DESIGN STUDIO" badge */
+.chip-pill { display: inline-flex; align-items: center; gap: .5rem; border: 1px solid var(--line); border-radius: 9999px; padding: .4rem .9rem; font-family: var(--font-mono); font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: #d1d1d6; background: rgb(255 255 255 / .03); }
+
+/* folder variants for the project stack: three dark shades; ink/paper stay as on the page */
+.fv-paper { --bg: #111111; --c-paper: #111111; }
+.fv-mist  { --bg: #0b0b0b; --c-paper: #0b0b0b; }
+.fv-ink   { --bg: #161616; --c-paper: #161616; }
+
+/* spotlight: a radial light under the pointer (position set by spotlight() in lib/fx.ts); invisible when --spot is 0 */
+.spot { position: relative; isolation: isolate; }
+.spot::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--fg) 12%, transparent), transparent 70%);
+  opacity: var(--spot, 0); transition: opacity 250ms var(--ease-out-quint);
+}
+.spot-edge::after {
+  content: ""; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; pointer-events: none; padding: 1px;
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%), var(--fg), transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: var(--spot, 0); transition: opacity 250ms var(--ease-out-quint);
 }
 
-/* Light mode when explicitly set */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --bg: var(--light-bg);
-    --surface: var(--light-surface);
-    --surface-2: var(--light-surface-2);
-    --text: var(--light-text);
-    --text-secondary: var(--light-text-secondary);
-    --text-tertiary: var(--light-text-tertiary);
-    --border: var(--light-border);
-    --glass-bg: var(--light-glass-bg);
-    --glass-border: var(--light-glass-border);
-  }
-}
-
-/* Explicit light theme class */
-:root[data-theme="light"] {
-  --bg: var(--light-bg);
-  --surface: var(--light-surface);
-  --surface-2: var(--light-surface-2);
-  --text: var(--light-text);
-  --text-secondary: var(--light-text-secondary);
-  --text-tertiary: var(--light-text-tertiary);
-  --border: var(--light-border);
-  --glass-bg: var(--light-glass-bg);
-  --glass-border: var(--light-glass-border);
+/* frosted glass (21st.dev "liquid glass" look), dark: translucent black, backdrop blur, bright inner edge. Solid fallback.
+   Fill stays high (.82): a light section underneath must not drag the nav text below 4.5:1 contrast. */
+.glass { background: rgb(10 10 10 / .94); }
+@supports (backdrop-filter: blur(1px)) {
+  .glass { background: rgb(10 10 10 / .82); -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4); box-shadow: inset 0 1px 0 rgb(255 255 255 / .08), 0 8px 30px rgb(0 0 0 / .4); }
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-bg: var(--bg);
+  --color-ink: var(--c-ink);
+  --color-paper: var(--c-paper);
+  --color-mist: var(--c-mist);
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-label), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
 }
 
-html {
-  scroll-behavior: smooth;
+@theme {
+  --color-ash: #8e8e93;
+  --color-danger: #ff8080;
+
+  --text-giant: clamp(5rem, 24vw, 20rem);
+  --text-giant--line-height: 0.82;
+  --text-mega: clamp(3rem, 13vw, 12rem);
+  --text-mega--line-height: 0.9;
+  --text-hero: clamp(2.4rem, 6.4vw, 5.25rem);
+  --text-hero--line-height: 1.08;
+  --text-section: clamp(2rem, 4.6vw, 3.4rem);
+  --text-section--line-height: 1.12;
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; scrollbar-width: none; }
+html::-webkit-scrollbar { display: none; }
+body { overflow-x: hidden; }
+
+/* doodle icons (sprite / library) */
+.doodle, .doodle * {
+  fill: none; stroke: currentColor; stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+/* spot illustrations: black parts use currentColor, "white" parts use the section background */
+.ill { fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+.ill .f-fg { fill: currentColor; }
+.ill .f-bg { fill: var(--bg); }
+.ill .s-bg { stroke: var(--bg); }
 
-::-webkit-scrollbar-track {
-  background: var(--surface);
-}
+::selection { background: #f5f5f7; color: #000000; }
 
-::-webkit-scrollbar-thumb {
-  background: var(--text-tertiary);
-  border-radius: 4px;
-}
+:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
-}
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 
-/* Focus styles */
-:focus-visible {
-  outline: 2px solid var(--text-secondary);
-  outline-offset: 2px;
-}
+/* nav link underline: a hand-drawn squiggle that draws on hover / when current (pathLength=1) */
+.nav-u path { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 400ms var(--ease-out-quint); }
+a:hover > .nav-u path, a[aria-current="true"] > .nav-u path { stroke-dashoffset: 0; }
 
-/* Selection */
-::selection {
-  background: var(--surface-2);
-  color: var(--text);
+/* letters wrapped by splitText: each clip box gets room for tails and hooks (Q, J, g, y). Only the hero name must never break. */
+#heroName, #bigCta, #prestasi .split-title { white-space: nowrap; }
+.split-title [data-word] > span, #heroName [data-word] > span, #bigCta [data-word] > span, #prestasi [data-word] > span { padding: 0.14em 0.2em 0.22em; margin: -0.14em -0.2em -0.22em; }
+.split-title { overflow-wrap: anywhere; }
+
+/* headline line mask */
+.line-mask { display: block; overflow: hidden; padding-bottom: 0.04em; }
+
+@keyframes marquee { to { transform: translateX(-50%); } }
+@keyframes marquee-rev { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+@keyframes ping-soft { 0% { transform: scale(1); opacity: .6; } 100% { transform: scale(2.6); opacity: 0; } }
+.ping-soft { animation: ping-soft 1.8s var(--ease-out-quint) infinite; }
+
+/* CSS fallback marquee (anime.js drives it when available) */
+.marquee-track { animation: marquee 28s linear infinite; }
+.marquee-track.reverse { animation-name: marquee-rev; animation-duration: 34s; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
